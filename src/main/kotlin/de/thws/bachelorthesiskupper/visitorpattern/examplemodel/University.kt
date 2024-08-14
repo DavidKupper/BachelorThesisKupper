@@ -6,9 +6,7 @@ import de.thws.bachelorthesiskupper.visitorpattern.metamodel.source.Node
 import de.thws.bachelorthesiskupper.visitorpattern.metamodel.source.EntityAttribute
 import de.thws.bachelorthesiskupper.visitorpattern.metamodel.source.Relation.*
 import de.thws.bachelorthesiskupper.visitorpattern.metamodel.source.RootNode
-import de.thws.bachelorthesiskupper.visitorpattern.visitor.AdjacencyVisitor
 import de.thws.bachelorthesiskupper.visitorpattern.visitor.ErToDbVisitor
-import de.thws.bachelorthesiskupper.visitorpattern.visitor.toDatabase
 
 fun main() {
     val treeRoot = RootNode(
@@ -56,11 +54,6 @@ fun main() {
     treeRoot.accept(visitor)
     val database = visitor.constructDatabase()
 
-    val adjacencyVisitor = AdjacencyVisitor()
-    treeRoot.accept(adjacencyVisitor)
-    val adjacencyList = adjacencyVisitor.constructAdjacencyList()
-
     println(database.toSqlCreateStatements())
     println()
-    println(adjacencyList.toDatabase().toSqlCreateStatements())
 }
