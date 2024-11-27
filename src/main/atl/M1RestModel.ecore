@@ -1,0 +1,42 @@
+<xmi:XMI xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore">
+	<ecore:EPackage name="M1RestModel" nsURI="http://example.org/m1rest" nsPrefix="m1rest" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore">
+	  <eClassifiers xsi:type="ecore:EClass" name="M1Rest">
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="adminUsers" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+	    <eStructuralFeatures xsi:type="ecore:EReference" name="resources" upperBound="-1" eType="#//M1Resource" containment="true"/>
+	  </eClassifiers>
+	  
+	  <eClassifiers xsi:type="ecore:EClass" name="M1Resource">
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+	    <eStructuralFeatures xsi:type="ecore:EReference" name="attributes" upperBound="-1" eType="#//M1Attribute" containment="true"/>
+	    <eStructuralFeatures xsi:type="ecore:EReference" name="references" upperBound="-1" eType="#//M1Reference" containment="true"/>
+	  </eClassifiers>
+	  
+	  <eClassifiers xsi:type="ecore:EClass" name="M1Attribute">
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="nullable" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="attributeType" eType="#//M1AttributeType"/>
+	  </eClassifiers>
+	  
+	  <eClassifiers xsi:type="ecore:EClass" name="M1Reference">
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="referencedResource" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="cardinality" eType="#//Cardinality"/>
+	  </eClassifiers>
+	  
+	  <eClassifiers xsi:type="ecore:EEnum" name="Cardinality">
+	    <eLiterals name="ONE_TO_ONE"/>
+	    <eLiterals name="ONE_TO_MANY"/>
+	    <eLiterals name="MANY_TO_ONE"/>
+	    <eLiterals name="MANY_TO_MANY"/>
+	  </eClassifiers>
+	  
+	  <eClassifiers xsi:type="ecore:EEnum" name="M1AttributeType">
+	    <eLiterals name="INTEGER"/>
+	    <eLiterals name="DECIMAL"/>
+	    <eLiterals name="BOOLEAN"/>
+	    <eLiterals name="STRING"/>
+	  </eClassifiers>
+	</ecore:EPackage>
+</xmi:XMI>

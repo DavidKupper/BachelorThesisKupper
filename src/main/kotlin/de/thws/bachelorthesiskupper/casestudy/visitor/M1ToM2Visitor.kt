@@ -39,7 +39,7 @@ class M1ToM2Visitor : M1Visitor {
                 else reference.referencedResource to currentTable.name
             val junctionTableName = namePair.first + namePair.second
             if (db.tables.none { it.name == junctionTableName }) {
-                db.tables.add(namePair.toJunctionTable())
+                db.tables.add(createM2JunctionTable(namePair.first, namePair.second))
             }
         }
     }
@@ -55,18 +55,18 @@ private fun M1Resource.toM2Table(): M2Table {
     return M2Table(name, columns = mutableListOf(idColumn))
 }
 
-private fun Pair<String, String>.toJunctionTable(): M2Table {
+private fun createM2JunctionTable(name1: String, name2: String): M2Table {
     return M2Table(
-        first + second,
+        name1 + name2,
         mutableListOf(
             M2Column(
-                first,
+                name1,
                 M2ColumnType.INT,
                 notNull = true,
                 isFk = true
             ),
             M2Column(
-                second,
+                name2,
                 M2ColumnType.INT,
                 notNull = true,
                 isFk = true

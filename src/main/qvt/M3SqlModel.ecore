@@ -1,0 +1,48 @@
+<xmi:XMI xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore">
+	<ecore:EPackage name="M3SqlModel" nsURI="http://example.org/m3sql" nsPrefix="m3sql" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore">
+	  <eClassifiers xsi:type="ecore:EClass" name="M3Sql">
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+	    <eStructuralFeatures xsi:type="ecore:EReference" name="users" upperBound="-1" eType="#//M3User" containment="true"/>
+	    <eStructuralFeatures xsi:type="ecore:EReference" name="tables" upperBound="-1" eType="#//M3Table" containment="true"/>
+	  </eClassifiers>
+	  
+	  <eClassifiers xsi:type="ecore:EClass" name="M3User">
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="password" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="role" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+	  </eClassifiers>
+	  
+	  <eClassifiers xsi:type="ecore:EClass" name="M3Table">
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+	    <eStructuralFeatures xsi:type="ecore:EReference" name="columns" upperBound="-1" eType="#//M3Column" containment="true"/>
+	    <eStructuralFeatures xsi:type="ecore:EReference" name="constraints" upperBound="-1" eType="#//M3Constraint" containment="true"/>
+	  </eClassifiers>
+	  
+	  <eClassifiers xsi:type="ecore:EClass" name="M3Column">
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" eType="#//M3ColumnType"/>
+	  </eClassifiers>
+	  
+	  <eClassifiers xsi:type="ecore:EClass" name="M3Constraint">
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="target" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" eType="#//M3ConstraintType"/>
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="suffix" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+	  </eClassifiers>
+	  
+	  <eClassifiers xsi:type="ecore:EEnum" name="M3ColumnType">
+	    <eLiterals name="INT"/>
+	    <eLiterals name="DECIMAL"/>
+	    <eLiterals name="VARCHAR"/>
+	    <eLiterals name="BIT"/>
+	  </eClassifiers>
+	  
+	  <eClassifiers xsi:type="ecore:EEnum" name="M3ConstraintType">
+	    <eLiterals name="NOT_NULL"/>
+	    <eLiterals name="PRIMARY_KEY"/>
+	    <eLiterals name="FOREIGN_KEY_REFERENCES"/>
+	  </eClassifiers>
+</ecore:EPackage>
+
+</xmi:XMI>

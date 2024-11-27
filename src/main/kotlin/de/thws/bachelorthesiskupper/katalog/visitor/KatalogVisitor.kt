@@ -55,7 +55,7 @@ class KatalogVisitor33a : KatalogVisitor {
     }
 
     override fun visit(sourceChild: SourceChild) {
-        targetRoot.children.add(sourceChild.toTargetChild())
+        targetRoot.children.add(TargetChild(sourceChild.a1))
     }
 }
 
@@ -68,7 +68,7 @@ class KatalogVisitor33b : KatalogVisitor {
     }
 
     override fun visit(sourceChild: SourceChild) {
-        targetRoot.children.add(sourceChild.toTargetChild())
+        targetRoot.children.add(TargetChild(sourceChild.a1))
     }
 }
 
@@ -81,12 +81,7 @@ class KatalogVisitor33c : KatalogVisitor {
 
     override fun visit(sourceChild: SourceChild) {
         if (sourceChild.a1.length > 3) {
-            targetRoot.children.add(sourceChild.toTargetChild())
+            targetRoot.children.add(TargetChild(sourceChild.a1))
         }
     }
 }
-
-fun SourceChild.toTargetChild(): TargetChild {
-    return TargetChild(this.a1)
-}
-

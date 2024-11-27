@@ -1,0 +1,7 @@
+main() {
+    source.rootObjects()->map case1();
+}
+
+mapping Source::A::case1() : Target::B {
+    result.b = self.a->select(a | a.bool = true)->size();
+}

@@ -1,0 +1,71 @@
+module M2ToM3Transformation;
+
+create OUT : M3SqlModel from IN : M2DbModel;
+
+rule M2Db2M3Sql {
+    from
+        source : M2DbModel!M2Db
+    to
+        target : M3SqlModel!M3Sql (
+            name <- source.name,
+            users <- source.rootUsers->collect(e | thisModule.ToM3User(e)),
+            tables <- source.tables->collect(e | thisModule.ToM3Table(e))
+        )
+}
+
+rule ToM3User (rootUser : M2DbModel!M2RootUser) {
+    to
+        user : M3SqlModel!M3User (
+            name <- rootUser.name,
+            password <- rootUser.password,
+            role <- 'admin'
+        )
+}
+
+rule ToM3Table (table : M2DbModel!M2Table) {
+    to
+        m3Table : M3SqlModel!M3Table (
+            name <- table.name,
+            columns <- table.columns->collect(e | thisModule.ToM3Column(e)),
+            constraints <- thisModule.createM3Constraints(table.columns)
+        )
+}
+
+rule ToM3Column (column : M2DbModel!M2Column) {
+    to
+        m3Column : M3SqlModel!M3Column (
+            name <- column.name + if column.isFk then 'Id' else '' endif,
+            type <- thisModule.ToM3ColumnType(column.type)
+        )
+}
+
+helper def : createM3Constraints(columns : Sequence(M2DbModel!M2Column)) : Sequence(M3SqlModel!M3Constraint) = 
+    columns->select(c | c.isPk)->collect(c | thisModule.createConstraint(c, #PRIMARY_KEY))
+    ->union(columns->select(c | c.notNull)->collect(c | thisModule.createConstraint(c, #NOT_NULL)))
+    ->union(columns->select(c | c.isFk)->collect(c | thisModule.createForeignKeyConstraint(c)));
+
+rule createConstraint(column : M2DbModel!M2Column) : M3SqlModel!M3Constraint {
+    to
+        constraint : M3SqlModel!M3Constraint (
+            target <- column.name,
+            type <-#PRIMARY_KEY
+            suffix <- null
+        )
+}
+
+rule createForeignKeyConstraint(column : M2DbModel!M2Column) : M3SqlModel!M3Constraint {
+    to
+        constraint : M3SqlModel!M3Constraint (
+                target <- column.name + 'Id',
+                password <- #FOREIGN_KEY_REFERENCES,
+                suffix <- column.name + '(Id)'
+            )
+}
+
+
+helper def : ToM3ColumnType(type : M2DbModel!M2ColumnType) : M3SqlModel!MColumnType =
+    if type = #INT then #INT
+    else if type = #DECIMAL then #DECIMAL
+    else if type = #BOOL then #BIT
+    else #VARCHAR
+    endif;1

@@ -1,0 +1,109 @@
+module M1Rest2M2Db;
+
+create OUT : M2DbModel from IN : M1RestModel;
+
+rule M1Rest2M2Db {
+    from
+        source : M1RestModel!M1Rest
+    to
+        target : M2DbModel!M2Db (
+            name <- source.name,
+            rootUsers <- thisModule.rootUsers(source.adminUsers),
+            tables <- source.resources
+                ->collect(e | thisModule.ToM2Table(e))
+                ->union(thisModule.createM2JunctionTables(source.resources)),
+            coreTableCount <- source.resources->size()
+        )
+}
+
+
+helper def : rootUsers(adminUsers : String) : Sequence(M2DbModel!M2RootUser) = 
+    adminUsers.split(',')->map(e | thisModule.createM2RootUser(e));
+
+rule createM2RootUser(name : String) : M2DbModel!M2RootUser {
+    to
+        user : M2DbModel!M2RootUser (name <- name, password <- 'root')
+}
+
+
+rule ToM2Table(resource : M1RestModel!M1Resource) {
+    to
+        table : M2DbModel!M2Table (
+            name <- resource.name,
+            columns <- Sequence {
+                thisModule.createIdColumn('Id', true)
+            }->union(
+                resource.references
+                    ->select(r | r.cardinality = #MANY_TO_ONE or r.cardinality = #ONE_TO_ONE)
+                    ->collect(r | thisModule.ToM2FkColumn(r))
+            )->union(
+                resource.attributes->collect(a | thisModule.ToM2Column(a))
+            )
+        )
+}
+
+rule createIdColumn(name : String, pk : Boolean) : M2DbModel!M2Column {
+    to
+        idColumn : M2DbModel!M2Column (
+            name <- name,
+            type <- #INT,
+            isPk <- pk,
+            notNull <- true,
+            isFk <- not pk,
+        )
+}
+
+
+rule ToM2Column(attribute : M1RestModel!M1Attribute) {
+    to
+        column : M2DbModel!M2Column (
+            name <- attribute.name,
+            type <- thisModule.m1AttributeTypeM2ColumnType(attribute.attributeType),
+            notNull <- not attribute.nullable,
+            isPk <- false,
+            isFk <- false
+        )
+}
+
+rule ToM2FkColumn(reference : M1RestModel!M1Reference) {
+    to
+        column : M2DbModel!M2Column (
+            name <- reference.referencedResource,
+            type <- #INT,
+            notNull <- true,
+            isPk <- false,
+            isFk <- true
+        )
+}
+
+helper def : m1AttributeType2M2ColumnType(type : M1RestModel!M1AttributeType) : M2DbModel!M2ColumnType = 
+    if type = #INTEGER then #INT
+    else if type = #DECIMAL then #DECIMAL
+    else if type = #BOOLEAN then #BOOL
+    else #TEXT
+    endif;
+
+helper def : createM2JunctionTables(resources : Sequence(M1RestModel!M1Resource)) : Sequence(M2DbModel!M2Table) = 
+    resources
+	->collect(resource | resource.references
+	                ->select(ref | ref.cardinality = #MANY_TO_MANY)
+	                ->collect(ref | thisModule.junctionTableNames(ref.referencedResource, resource.name)))
+	->flatten()
+	->asSet()
+	->collect(tableNames | thisModule.createJunctionTable(tableNames.first, tableNames.second));
+	
+helper def : junctionTableNames(name1: String, name2: String) : TupleType(first : String, second : String) = 
+	if name1 < name2 then Tuple {first = name1, second = name2}
+	else Tuple {first = name2, second = name1}
+	endif;
+
+rule createJunctionTable(name1 : String, name2 : String) : M2DbModel!M2Table {
+    to
+        table :  M2DbModel!M2Table (
+         name <- name1 + name2,
+             Sequence {
+                 thisModule.createIdColumn(name1, false),
+                 thisModule.createIdColumn(name2, false)
+             }
+        )
+}

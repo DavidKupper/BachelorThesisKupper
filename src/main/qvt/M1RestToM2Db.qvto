@@ -1,0 +1,123 @@
+modeltype M1RestModel uses 'platform:/resource/CaseStudyQVT/M1RestModel.ecore';
+modeltype M2DbModel uses 'platform:/resource/CaseStudyQVT/M2DbModel.ecore';
+
+transformation M1Rest2M2Db(in source : M1RestModel, out target : M2DbModel);
+
+main() {
+    source.rootObjects()[M1RestModel::M1Rest]->map toM2Db();
+}
+
+mapping M1RestModel::M1Rest::toM2Db() : M2DbModel::M2Db {
+    result.name := self.name;
+    result.rootUsers := self.adminUsers.tokenize(',')-> map rootUser();
+    var junctionTables := createM2JunctionTables(self.resources);
+    tables := self.resources->map toM2Table()->union(junctionTables);
+    coreTableCount := self.resources->size();
+}
+
+mapping String::rootUser() : M2DbModel::M2RootUser {
+	name := self;
+	password := 'root';
+}
+
+mapping M1RestModel::M1Resource::toM2Table() : M2DbModel::M2Table {
+    result.name := self.name;
+    var idColumn := Sequence {createIdColumn()};
+    var attributeColumns := self.attributes->map toM2Column();
+    var fkColumns := self.referencesM1
+    ->select(r | r.cardinality = M1RestModel::Cardinality::MANY_TO_ONE or r.cardinality = M1RestModel::Cardinality::ONE_TO_ONE)
+    ->map toM2FkColumn();
+    columns := idColumn->union(fkColumns)->union(attributeColumns);
+}
+
+helper createIdColumn() : M2DbModel::M2Column {
+    return object M2DbModel::M2Column {
+        name := 'Id';
+        type := M2DbModel::M2ColumnType::INT;
+        notNull := true;
+        isPk := true;
+        isFk := false;
+    };
+}
+
+mapping M1RestModel::M1Attribute::toM2Column() : M2DbModel::M2Column {
+    name := self.name;
+    type := m1AttributeType2M2ColumnType(self.attributeType);
+    notNull := not self.nullable;
+    isPk := false;
+    isFk := false;
+}
+
+mapping M1RestModel::M1Reference::toM2FkColumn() : M2DbModel::M2Column {
+    name := self.referencedResource;
+    type := M2DbModel::M2ColumnType::INT;
+    notNull := true;
+    isPk := false;
+    isFk := true;
+}
+
+helper m1AttributeType2M2ColumnType(type: M1RestModel::M1AttributeType) : M2DbModel::M2ColumnType {
+	if (type = M1AttributeType::INTEGER) {
+		return M2ColumnType::INT
+	}
+	else if (type = M1AttributeType::DECIMAL) {
+		return M2ColumnType::DECIMAL
+	}
+	else if (type = M1AttributeType::BOOLEAN) {
+		return M2ColumnType::BOOL
+	}
+	else {
+		return M2ColumnType::TEXT
+	}
+}
+
+helper createM2JunctionTables(resources : OrderedSet(M1RestModel::M1Resource)) : Sequence(M2DbModel::M2Table) {
+ 	var junctionTableNames = resources
+ 	->map toJunctionTableNames()
+ 	->flatten();
+	return junctionTableNames->map toJunctionTables();
+}
+
+mapping M1RestModel::M1Resource::toJunctionTableNames() : OrderedSet(Tuple(first: String, second: String)) {
+	self.referencesM1
+	->select(r | r.cardinality = M1RestModel::Cardinality::MANY_TO_MANY)
+	->map toJunctionTableNames(self.name);
+}
+
+mapping M1RestModel::M1Reference::toJunctionTableNames(resourceName: String) : Tuple(first: String, second: String) {
+	if (self.referencedResource < resourceName) {
+		Tuple {first = self.referencedResource, second = resourceName};	
+	}
+	else {
+		Tuple {first = resourceName, second = self.referencedResource};		
+	}
+}
+
+mapping Tuple(first: String, second: String)::toJunctionTables() : M2DbModel::M2Table {
+	createJunctionTable(self.first, self.second);
+}
+
+
+helper createJunctionTable(name1 : String, name2 : String) : M2DbModel::M2Table {
+    return object M2DbModel::M2Table {
+        name := name1 + name2;
+        columns := Sequence {
+            object M2DbModel::M2Column {
+                name := name1;
+                type := M2DbModel::M2ColumnType::INT;
+                notNull := true;
+                isPk := false;
+                isFk := true;
+            },
+            object M2DbModel::M2Column {
+                name := name2;
+                type := M2DbModel::M2ColumnType::INT;
+                notNull := true;
+                isPk := false;
+                isFk := true;
+            }
+        };
+    };
+}
+
+

@@ -47,6 +47,6 @@ class KatalogTransformer33C : KatalogTransformer {
 }
 
 fun SourceChild.toTargetChild(): TargetChild {
-    return TargetChild(this.a1);
+    return TargetChild(this.a1)
 }
 

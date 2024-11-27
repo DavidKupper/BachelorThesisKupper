@@ -40,7 +40,6 @@ class M2ToM3Visitor : M2Visitor {
             currentTable.constraints.add(M3Constraint(column.name, M3ConstraintType.FOREIGN_KEY_REFERENCES, suffix = "${column.name}(Id)"))
         }
     }
-
 }
 
 private fun M2ColumnType.toM3ColumnType(): M3ColumnType {

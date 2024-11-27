@@ -1,0 +1,8 @@
+rule Case1 {
+    from
+        source : Source!A
+    to
+        target : Target!B (
+            b <- source.a->select(a | a.bool = true)->size()
+        )
+}

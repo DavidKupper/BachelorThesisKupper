@@ -1,0 +1,66 @@
+modeltype M2DbModel uses 'platform:/resource/CaseStudyQVT/M2DbModel.ecore';
+modeltype M3SqlModel uses 'platform:/resource/CaseStudyQVT/M3SqlModel.ecore';
+
+transformation M2ToM3Transformer(in source : M2DbModel, out target : M3SqlModel);
+
+main() {
+    source.rootObjects()[M2DbModel::M2Db]->map toM3Sql();
+}
+
+mapping M2DbModel::M2Db::toM3Sql() : M3SqlModel::M3Sql {
+    name := self.name;
+    users := self.rootUsers->map toM3User();
+    tables := self.tables->map toM3Table();
+}
+
+mapping M2DbModel::M2RootUser::toM3User() : M3SqlModel::M3User {
+    name := self.name;
+    password := self.password;
+    role := 'admin';
+}
+
+mapping M2DbModel::M2Table::toM3Table() : M3SqlModel::M3Table {
+    name := self.name;
+    columns := self.columns->map toM3Column();
+    constraints := createM3Constraints(self.columns);
+}
+
+mapping M2DbModel::M2Column::toM3Column() : M3SqlModel::M3Column {
+    name := self.name + (if self.isFk then 'Id' else '' endif);
+    type := m2ColumnType2M3ColumnType(self.type);
+}
+
+helper createM3Constraints(columns : OrderedSet(M2DbModel::M2Column)) : OrderedSet(M3SqlModel::M3Constraint) {
+	var pkConstraints := columns->select(c | c.isPk)->map createM3Constraint(M3ConstraintType::PRIMARY_KEY);
+	var notNullConstraints := columns->select(c | c.notNull)-> map createM3Constraint(M3ConstraintType::NOT_NULL);
+	var fkConstraints := columns->select(c | c.isFk)-> map createM3ConstraintFK();
+	
+	return pkConstraints->union(notNullConstraints)->union(fkConstraints)->asOrderedSet();
+}
+
+mapping M2DbModel::M2Column::createM3Constraint(type : M3SqlModel::M3ConstraintType) : M3SqlModel::M3Constraint {
+	result.target:= self.name;
+	result.type := type;
+}
+
+mapping M2DbModel::M2Column::createM3ConstraintFK() : M3SqlModel::M3Constraint {
+	result.target:= self.name;
+	result.type := M3ConstraintType::FOREIGN_KEY_REFERENCES;
+	result.suffix := self.name + '(Id)';
+}
+
+
+helper m2ColumnType2M3ColumnType(type : M2DbModel::M2ColumnType) : M3SqlModel::M3ColumnType {
+	if (type = M2ColumnType::INT) {
+		return M3ColumnType::INT
+	}
+	else if (type = M2ColumnType::DECIMAL) {
+		return M3ColumnType::DECIMAL
+	}
+	else if (type = M2ColumnType::BOOL) {
+		return M3ColumnType::BIT
+	}
+	else {
+		return M3ColumnType::VARCHAR
+	}
+}

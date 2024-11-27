@@ -11,11 +11,11 @@ class M1ToM2Transformer : Transformer<M1Rest, M2Db> {
 private fun rootUsers(adminUsers: String) = adminUsers.split(",").map { M2RootUser(it, "root") }
 
 private fun M1Resource.toM2Table(): M2Table {
+    val idColumn = M2Column(name = "Id", M2ColumnType.INT, notNull = true, isPk = true)
     val attributeColumns = attributes.map { it.toM2Column() }
     val fkColumns = references
         .filter { it.cardinality == Cardinality.MANY_TO_ONE || it.cardinality == Cardinality.ONE_TO_ONE }
         .map { it.toM2FkColumn() }
-    val idColumn = M2Column(name = "Id", M2ColumnType.INT, notNull = true, isPk = true)
     return M2Table(name, listOf(idColumn) + fkColumns + attributeColumns)
 }
 
@@ -23,14 +23,18 @@ private fun createM2JunctionTables(resources: List<M1Resource>): List<M2Table> {
     val junctionTableNames = resources.flatMap { resource ->
         resource.references
             .filter { it.cardinality == Cardinality.MANY_TO_MANY }
-            .map { ref -> if (resource.name < ref.referencedResource) resource.name to ref.referencedResource else ref.referencedResource to resource.name}
+            .map { ref ->
+                if (resource.name < ref.referencedResource)
+                    resource.name to ref.referencedResource
+                else ref.referencedResource to resource.name
+            }
     }
     return junctionTableNames
         .distinct()
-        .map { createJunctionTable(it.first, it.second) }
+        .map { createM2JunctionTable(it.first, it.second) }
 }
 
-private fun createJunctionTable(name1: String, name2: String) = M2Table(
+private fun createM2JunctionTable(name1: String, name2: String) = M2Table(
     name1 + name2, listOf(
         M2Column(name1, M2ColumnType.INT, notNull = true, isFk = true),
         M2Column(name2, M2ColumnType.INT, notNull = true, isFk = true)

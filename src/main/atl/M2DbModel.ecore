@@ -1,0 +1,37 @@
+<xmi:XMI xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore">
+	<ecore:EPackage name="M2DbModel" nsURI="http://example.org/m2db" nsPrefix="m2db" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore">
+	  <eClassifiers xsi:type="ecore:EClass" name="M2Db">
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+	    <eStructuralFeatures xsi:type="ecore:EReference" name="rootUsers" upperBound="-1" eType="#//M2RootUser" containment="true"/>
+	    <eStructuralFeatures xsi:type="ecore:EReference" name="tables" upperBound="-1" eType="#//M2Table" containment="true"/>
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="coreTableCount" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+	  </eClassifiers>
+	  
+	  <eClassifiers xsi:type="ecore:EClass" name="M2RootUser">
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="password" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+	  </eClassifiers>
+	  
+	  <eClassifiers xsi:type="ecore:EClass" name="M2Table">
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+	    <eStructuralFeatures xsi:type="ecore:EReference" name="columns" upperBound="-1" eType="#//M2Column" containment="true"/>
+	  </eClassifiers>
+	  
+	  <eClassifiers xsi:type="ecore:EClass" name="M2Column">
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" eType="#//M2ColumnType"/>
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="notNull" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="isPk" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+	    <eStructuralFeatures xsi:type="ecore:EAttribute" name="isFk" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+	  </eClassifiers>
+	  
+	  <eClassifiers xsi:type="ecore:EEnum" name="M2ColumnType">
+	    <eLiterals name="INT"/>
+	    <eLiterals name="DECIMAL"/>
+	    <eLiterals name="BOOL"/>
+	    <eLiterals name="TEXT"/>
+	  </eClassifiers>
+	</ecore:EPackage>
+</xmi:XMI>
